@@ -1,1 +1,16 @@
+# IDE
 .idea
+.vscode
+
+# Зависимости и сборка
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Окружение: в репозитории живёт только .env.example
+.env
+.env.*
+!.env.example
+
+# Логи
+*.log
