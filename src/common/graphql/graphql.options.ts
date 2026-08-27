@@ -23,27 +23,17 @@ const SANDBOX_DOCUMENT = `query {
   }
 }`;
 
-// Глубина, после которой запрос считается злонамеренным. Самый глубокий
-// осмысленный путь — profile → experience → skills → projects → поле.
+// Самый глубокий осмысленный путь: profile -> experience -> skills -> projects -> поле
 const MAX_QUERY_DEPTH = 10;
 
-export function buildGraphqlOptions(isProduction: boolean): Omit<ApolloDriverConfig, 'driver'> {
+export function buildGraphqlOptions(isDevelopment: boolean): Omit<ApolloDriverConfig, 'driver'> {
   return {
-    // В контейнере каталог принадлежит root, а процесс идёт под node: писать
-    // файл схемы некуда, поэтому в проде она собирается в памяти.
-    autoSchemaFile: isProduction ? true : join(process.cwd(), 'schema.gql'),
+    autoSchemaFile: isDevelopment ? join(process.cwd(), 'schema.gql') : true,
     sortSchema: true,
 
-    // Apollo Server отключает интроспекцию при NODE_ENV=production — без этого
-    // задеплоенная песочница не увидит схему.
     introspection: true,
-
-    // Nest по умолчанию подключает собственную страницу-лендинг, а Apollo
-    // разрешает только один такой плагин — иначе падение на старте.
     playground: false,
 
-    // Правило валидации, а не плагин: запрос отбраковывается до выполнения,
-    // и типы не зависят от мажорной версии Apollo Server.
     validationRules: [maxDepthRule(MAX_QUERY_DEPTH)],
 
     formatError: formatGraphqlError,

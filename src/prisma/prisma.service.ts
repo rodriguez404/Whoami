@@ -5,13 +5,20 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import type { Env } from '../config/env.validation';
 import { PrismaClient } from '../generated/prisma/client';
 
+type ClientOptions = {
+  adapter: PrismaPg;
+  log: [{ emit: 'event'; level: 'query' }];
+};
+
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+export class PrismaService
+  extends PrismaClient<ClientOptions>
+  implements OnModuleInit, OnModuleDestroy
+{
   constructor(config: ConfigService<Env, true>) {
-    // Prisma 7 подключается только через driver adapter: нативного движка нет,
-    // запросы уходят через обычный пул pg.
     super({
       adapter: new PrismaPg({ connectionString: config.get('POSTGRES_DSN', { infer: true }) }),
+      log: [{ emit: 'event', level: 'query' }],
     });
   }
 

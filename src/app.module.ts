@@ -23,7 +23,7 @@ import { ProfileModule } from './profile/profile.module';
       driver: ApolloDriver,
       inject: [ConfigService],
       useFactory: (config: ConfigService<Env, true>) =>
-        buildGraphqlOptions(config.get('NODE_ENV', { infer: true }) === 'production'),
+        buildGraphqlOptions(config.get('NODE_ENV', { infer: true }) === 'development'),
     }),
     ProfileModule,
     HealthModule,
