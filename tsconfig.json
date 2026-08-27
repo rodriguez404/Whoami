@@ -4,8 +4,9 @@
     "target": "ES2023",
     "lib": ["ES2023"],
     "outDir": "./dist",
-    "baseUrl": "./",
 
+    // На этих двух держится DI: контейнер Nest читает типы конструктора
+    // из метаданных, которые эмитит компилятор.
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
 
@@ -18,9 +19,9 @@
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
 
-    "declaration": true,
+    // Карты нужны, чтобы стек-трейсы указывали на .ts; читает их Node,
+    // запущенный с --enable-source-maps (см. CMD в Dockerfile).
     "sourceMap": true,
-    "incremental": true,
     "skipLibCheck": true
   },
   "exclude": ["node_modules", "dist"]
