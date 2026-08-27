@@ -1,6 +1,6 @@
-// До импорта модулей: иначе ConfigModule увидит development и приложение
-// начнёт переписывать закоммиченный schema.gql прямо во время тестов.
 process.env.NODE_ENV = 'test';
+
+import type { Server } from 'node:http';
 
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
@@ -8,6 +8,27 @@ import request from 'supertest';
 
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/prisma/prisma.service';
+
+interface GraphqlError {
+  message: string;
+  extensions: Record<string, unknown>;
+}
+
+interface GraphqlResponse<T> {
+  data?: T;
+  errors?: GraphqlError[];
+}
+
+interface ProfileShape {
+  profile: {
+    name: string;
+    description: string;
+    links?: { url: string }[];
+    skills: { name: string }[];
+    experience: { company: string; position?: string }[];
+    projects: { name: string }[];
+  };
+}
 
 const TASK_QUERY = `query {
   profile {
@@ -29,9 +50,14 @@ const DEEP_QUERY = `query {
   }
 }`;
 
+const TOO_DEEP_QUERY = `{
+  profile { experience { skills { projects { skills { projects {
+    skills { projects { skills { projects { name } } } } } } } } } }
+}`;
+
 describe('GraphQL API (e2e)', () => {
   let app: INestApplication;
-  let queries: string[];
+  let queries: string[] = [];
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
@@ -52,18 +78,20 @@ describe('GraphQL API (e2e)', () => {
   });
 
   function post(query: string) {
-    return request(app.getHttpServer()).post('/graphql').send({ query });
+    return request(app.getHttpServer() as Server)
+      .post('/graphql')
+      .send({ query });
   }
 
   it('отвечает на запрос из текста задания без единой правки', async () => {
     const response = await post(TASK_QUERY).expect(200);
-    const profile = response.body.data.profile;
+    const body = response.body as GraphqlResponse<ProfileShape>;
 
-    expect(response.body.errors).toBeUndefined();
-    expect(profile.name).toEqual(expect.any(String));
-    expect(profile.skills.length).toBeGreaterThan(0);
-    expect(profile.experience.length).toBeGreaterThan(0);
-    expect(profile.projects.length).toBeGreaterThan(0);
+    expect(body.errors).toBeUndefined();
+    expect(body.data?.profile.name).toEqual(expect.any(String));
+    expect(body.data?.profile.skills.length).toBeGreaterThan(0);
+    expect(body.data?.profile.experience.length).toBeGreaterThan(0);
+    expect(body.data?.profile.projects.length).toBeGreaterThan(0);
   });
 
   it('не ходит в базу за тем, чего не спросили', async () => {
@@ -73,13 +101,13 @@ describe('GraphQL API (e2e)', () => {
     expect(queries[0]).toContain('"profile"');
   });
 
-  // Главная проверка этапа: без DataLoader на каждую строку-родителя уходил бы отдельный запрос
+  // Без DataLoader на каждую строку-родителя уходил бы отдельный запрос.
   it('связанные данные забирает одним запросом на таблицу, а не на строку', async () => {
     const response = await post(DEEP_QUERY).expect(200);
-    const profile = response.body.data.profile;
+    const profile = (response.body as GraphqlResponse<ProfileShape>).data?.profile;
 
-    expect(profile.experience.length).toBeGreaterThan(1);
-    expect(profile.projects.length).toBeGreaterThan(1);
+    expect(profile?.experience.length).toBeGreaterThan(1);
+    expect(profile?.projects.length).toBeGreaterThan(1);
 
     const hits = (table: string) => queries.filter((q) => q.includes(`"${table}"`)).length;
 
@@ -89,16 +117,23 @@ describe('GraphQL API (e2e)', () => {
     expect(hits('project_highlight')).toBe(1);
   });
 
+  // 400, а не 200: запрос не прошёл валидацию, до исполнения дело не дошло.
   it('отклоняет слишком глубокий запрос', async () => {
-    const deep = `{ profile { experience { skills { projects { skills { projects { skills { projects { skills { projects { name } } } } } } } } } } }`;
-    const response = await post(deep).expect(400);
+    const response = await post(TOO_DEEP_QUERY).expect(400);
+    const error = (response.body as GraphqlResponse<never>).errors?.[0];
 
-    const error = response.body.errors[0];
-    expect(error.extensions).toMatchObject({ code: 'GRAPHQL_VALIDATION_FAILED', depth: 11, maxDepth: 10 });
-    expect(error.message).toContain('глубина вложенности');
+    expect(error?.extensions).toMatchObject({
+      code: 'GRAPHQL_VALIDATION_FAILED',
+      depth: 11,
+      maxDepth: 10,
+    });
+    expect(error?.message).toContain('глубина вложенности');
   });
 
   it('с корня уводит в песочницу', async () => {
-    await request(app.getHttpServer()).get('/').expect(302).expect('Location', '/graphql');
+    await request(app.getHttpServer() as Server)
+      .get('/')
+      .expect(302)
+      .expect('Location', '/graphql');
   });
 });
