@@ -4,7 +4,8 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['dist/**', 'coverage/**'] },
+  // Сгенерированный клиент Prisma не наш код и правилам не подчиняется.
+  { ignores: ['dist/**', 'coverage/**', 'src/generated/**'] },
 
   js.configs.recommended,
 

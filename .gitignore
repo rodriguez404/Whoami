@@ -10,3 +10,6 @@ dist/
 !.env.example
 
 *.log
+
+# Клиент Prisma генерируется при сборке
+src/generated/
