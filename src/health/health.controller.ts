@@ -1,14 +1,15 @@
 import { Controller, Get } from '@nestjs/common';
 
-/**
- * Единственный REST-эндпоинт в приложении: проба для docker HEALTHCHECK.
- * Всё остальное API — GraphQL. Держать пробу на GraphQL было бы неудобно:
- * оркестратору нужен простой HTTP-статус, а GraphQL всегда отвечает 200.
- */
+import { PrismaService } from '../prisma/prisma.service';
+
 @Controller('health')
 export class HealthController {
+  constructor(private readonly prisma: PrismaService) {}
+
+  // Проба ходит в базу: приложение, не способное ответить на запрос, здоровым не считается.
   @Get()
-  check(): { status: 'ok'; uptime: number } {
+  async check(): Promise<{ status: 'ok'; uptime: number }> {
+    await this.prisma.$queryRaw`SELECT 1`;
     return { status: 'ok', uptime: Math.floor(process.uptime()) };
   }
 }

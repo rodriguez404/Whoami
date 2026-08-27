@@ -1,0 +1,154 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum SocialKind {
+  GITHUB
+  TELEGRAM
+  EMAIL
+  WEBSITE
+}
+
+enum SkillCategory {
+  LANGUAGE
+  DATABASE
+  INFRA
+  FRONTEND
+  TOOLING
+}
+
+enum ProjectKind {
+  PRODUCT
+  INFRASTRUCTURE
+  GAMEDEV
+}
+
+model Profile {
+  id           Int      @id @default(1)
+  fullName     String   @map("full_name")
+  headline     String
+  description  String
+  location     String
+  birthDate    DateTime @map("birth_date") @db.Date
+  availability String
+
+  links      SocialLink[]
+  experience Experience[]
+  projects   Project[]
+
+  @@map("profile")
+}
+
+model SocialLink {
+  id        Int        @id @default(autoincrement())
+  profileId Int        @map("profile_id")
+  kind      SocialKind
+  url       String
+  label     String
+  sortOrder Int        @map("sort_order")
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, kind])
+  @@map("social_link")
+}
+
+model Skill {
+  id        Int           @id @default(autoincrement())
+  name      String        @unique
+  category  SkillCategory
+  sortOrder Int           @map("sort_order")
+
+  experience ExperienceSkill[]
+  projects   ProjectSkill[]
+
+  @@map("skill")
+}
+
+model Experience {
+  id        Int       @id @default(autoincrement())
+  profileId Int       @map("profile_id")
+  company   String
+  position  String
+  startDate DateTime  @map("start_date") @db.Date
+  endDate   DateTime? @map("end_date") @db.Date
+  summary   String
+  sortOrder Int       @map("sort_order")
+
+  profile      Profile           @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  achievements Achievement[]
+  skills       ExperienceSkill[]
+
+  @@unique([company, startDate])
+  @@map("experience")
+}
+
+model Achievement {
+  id           Int    @id @default(autoincrement())
+  experienceId Int    @map("experience_id")
+  text         String
+  sortOrder    Int    @map("sort_order")
+
+  experience Experience @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+
+  @@unique([experienceId, sortOrder])
+  @@map("achievement")
+}
+
+model Project {
+  id         Int         @id @default(autoincrement())
+  profileId  Int         @map("profile_id")
+  name       String
+  slug       String      @unique
+  summary    String
+  url        String?
+  repoUrl    String?     @map("repo_url")
+  kind       ProjectKind
+  isFeatured Boolean     @default(false) @map("is_featured")
+  sortOrder  Int         @map("sort_order")
+
+  profile    Profile            @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  highlights ProjectHighlight[]
+  skills     ProjectSkill[]
+
+  @@map("project")
+}
+
+model ProjectHighlight {
+  id        Int    @id @default(autoincrement())
+  projectId Int    @map("project_id")
+  text      String
+  sortOrder Int    @map("sort_order")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, sortOrder])
+  @@map("project_highlight")
+}
+
+model ExperienceSkill {
+  experienceId Int @map("experience_id")
+  skillId      Int @map("skill_id")
+
+  experience Experience @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+  skill      Skill      @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([experienceId, skillId])
+  @@map("experience_skill")
+}
+
+model ProjectSkill {
+  projectId Int @map("project_id")
+  skillId   Int @map("skill_id")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  skill   Skill   @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, skillId])
+  @@map("project_skill")
+}
