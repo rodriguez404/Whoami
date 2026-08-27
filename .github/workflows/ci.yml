@@ -50,13 +50,14 @@ jobs:
       - name: Deps installation
         run: npm ci
 
-      # Клиент Prisma не коммитится, а исходники его импортируют — без генерации
-      # не пройдут ни линтер, ни сборка.
       - name: Prisma client
         run: npm run generate
 
       - name: Linter
         run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
 
       - name: Build
         run: npm run build
@@ -67,3 +68,18 @@ jobs:
       # Дважды подряд: повторный запуск обязан пройти без нарушения уникальности.
       - name: Seed twice
         run: npx prisma db seed && npx prisma db seed
+
+      - name: Unit tests
+        run: npm test
+
+      - name: E2E tests
+        run: npm run test:e2e
+
+      # schema.gql пишется только при запуске в разработке. Если его забыли
+      # перегенерировать, в репозитории лежит устаревший контракт API.
+      - name: Schema is up to date
+        run: |
+          NODE_ENV=development APP_PORT=3999 node dist/main.js &
+          until curl -sf http://localhost:3999/health > /dev/null; do sleep 1; done
+          kill %1
+          git diff --exit-code schema.gql

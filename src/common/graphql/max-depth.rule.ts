@@ -14,7 +14,7 @@ export function maxDepthRule(maxDepth: number) {
         context.reportError(
           new GraphQLError(
             `Запрос отклонён: глубина вложенности ${depth} превышает допустимые ${maxDepth}`,
-            { nodes: [node], extensions: { code: 'QUERY_TOO_DEEP', depth, maxDepth } },
+            { nodes: [node], extensions: { depth, maxDepth } },
           ),
         );
       }
