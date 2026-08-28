@@ -83,3 +83,42 @@ jobs:
           until curl -sf http://localhost:3999/health > /dev/null; do sleep 1; done
           kill %1
           git diff --exit-code schema.gql
+
+  compose:
+    name: compose up from scratch
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Start stack
+        run: docker compose up --build -d --wait
+
+      - name: Task query from the assignment
+        run: |
+          curl -sf -X POST http://localhost:3000/graphql \
+            -H "Content-Type: application/json" \
+            -d '{"query":"{ profile { name description skills { name } experience { company position } projects { name } } }"}' \
+            -o response.json
+          cat response.json
+          if grep -q '"errors"' response.json; then exit 1; fi
+          grep -q '"profile"' response.json
+
+      # Сид выполняется при каждом старте контейнера, поэтому обязан пережить рестарт.
+      - name: Restart does not duplicate data
+        run: |
+          before=$(docker compose exec -T postgres psql -U whoami -d whoami -tAc "select count(*) from skill")
+          docker compose restart app
+          docker compose up -d --wait
+          after=$(docker compose exec -T postgres psql -U whoami -d whoami -tAc "select count(*) from skill")
+          echo "навыков до: $before, после: $after"
+          test "$before" = "$after"
+
+      - name: Logs on failure
+        if: failure()
+        run: docker compose logs
+
+      - name: Tear down
+        if: always()
+        run: docker compose down -v

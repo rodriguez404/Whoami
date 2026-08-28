@@ -1,0 +1,27 @@
+# Продовый оверрайд поверх compose.yaml: docker compose -f compose.yaml -f compose.prod.yaml up -d --build
+# Наружу ничего не публикуется (входная точка — nginx из стека R-CRM),
+# заданы лимиты памяти и приложение дополнительно подключено к сети R-CRM, чтобы его видел nginx.
+
+services:
+  postgres:
+    ports: !reset []
+    networks:
+      default:
+        aliases:
+          - whoami-postgres
+    mem_limit: 256m
+
+  app:
+    container_name: whoami
+    ports: !reset []
+    environment:
+      POSTGRES_DSN: postgresql://${POSTGRES_USER:-whoami}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD обязателен в проде}@whoami-postgres:5432/${POSTGRES_DB:-whoami}?schema=public
+    networks:
+      - default
+      - rcrm
+    mem_limit: 256m
+
+networks:
+  rcrm:
+    external: true
+    name: ${RCRM_NETWORK:-r-crm_default}
