@@ -8,8 +8,8 @@ import { SkillsRepository } from './skills.repository';
 export class SkillsService {
   constructor(private readonly repository: SkillsRepository) {}
 
-  async findAll(): Promise<Skill[]> {
-    const rows = await this.repository.findAll();
+  async findCore(): Promise<Skill[]> {
+    const rows = await this.repository.findCore();
     return rows.map(toSkill);
   }
 }

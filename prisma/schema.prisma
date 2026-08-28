@@ -64,6 +64,10 @@ model Skill {
   category  SkillCategory
   sortOrder Int           @map("sort_order")
 
+  /// true — освоенный навык, попадает в список профиля
+  /// false — использовал в проектах, но ещё разбираюсь
+  isCore Boolean @default(true) @map("is_core")
+
   experience ExperienceSkill[]
   projects   ProjectSkill[]
 

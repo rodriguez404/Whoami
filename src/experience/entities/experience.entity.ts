@@ -17,6 +17,6 @@ export class Experience {
   @Field(() => GraphQLISODateTime, { nullable: true, description: 'null — по настоящее время' })
   endDate!: Date | null;
 
-  @Field()
-  summary!: string;
+  @Field({ description: 'Краткое описание' })
+  description!: string;
 }

@@ -7,8 +7,17 @@ export async function seedSkills(db: SeedDb): Promise<SkillIds> {
   for (const [index, skill] of skills.entries()) {
     const row = await db.skill.upsert({
       where: { name: skill.name },
-      create: { name: skill.name, category: skill.category, sortOrder: index },
-      update: { category: skill.category, sortOrder: index },
+      create: {
+        name: skill.name,
+        category: skill.category,
+        sortOrder: index,
+        isCore: skill.isCore ?? true,
+      },
+      update: {
+        category: skill.category,
+        sortOrder: index,
+        isCore: skill.isCore ?? true,
+      },
     });
     byName.set(row.name, row.id);
   }

@@ -7,8 +7,11 @@ import { PrismaService } from '../prisma/prisma.service';
 export class SkillsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  findAll(): Promise<SkillRow[]> {
-    return this.prisma.skill.findMany({ orderBy: { sortOrder: 'asc' } });
+  findCore(): Promise<SkillRow[]> {
+    return this.prisma.skill.findMany({
+      where: { isCore: true },
+      orderBy: { sortOrder: 'asc' },
+    });
   }
 
   // Батч для DataLoader: один запрос на всех родителей вместо запроса на каждого.

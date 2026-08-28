@@ -14,7 +14,7 @@ const projects: Project[] = [
   {
     id: 1,
     name: 'Витрина',
-    summary: '',
+    description: '',
     url: null,
     repoUrl: null,
     kind: 'PRODUCT',
@@ -23,7 +23,7 @@ const projects: Project[] = [
   {
     id: 2,
     name: 'Кастомка',
-    summary: '',
+    description: '',
     url: null,
     repoUrl: null,
     kind: 'GAMEDEV',

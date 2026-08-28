@@ -9,7 +9,7 @@ export function toProject(row: ProjectRow): Project {
   return {
     id: row.id,
     name: row.name,
-    summary: row.summary,
+    description: row.summary,
     url: row.url,
     repoUrl: row.repoUrl,
     kind: row.kind,
