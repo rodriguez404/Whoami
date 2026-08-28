@@ -26,7 +26,8 @@ COPY --from=build /app/dist ./dist
 # Схема и конфиг нужны в рантайме: миграции накатываются при старте контейнера.
 COPY prisma ./prisma
 COPY prisma.config.ts ./
-COPY docker-entrypoint.sh /usr/local/bin/
+# --chmod: git под Windows не хранит бит исполнения
+COPY --chmod=0755 docker-entrypoint.sh /usr/local/bin/
 
 USER node
 
