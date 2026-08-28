@@ -5,6 +5,10 @@
 
 **Живая песочница:** <https://whoami.r-crm.site>
 
+Rate limiting задано в nginx основного проекта:
+10 запросов в секунду с адреса при запасе в 20. Локальный стенд поднимается без
+nginx, поэтому лимита там нет.
+
 **Стек:** TypeScript, Node.js 24, NestJS 11, Prisma 7, PostgreSQL 18, GraphQL
 (Apollo Server 5), Docker.
 
