@@ -3,6 +3,8 @@
 Цифровая визитка: GraphQL API, отдающее профиль специалиста, навыки, опыт работы
 и проекты. Интерфейс — Apollo Sandbox.
 
+**Живая песочница:** <https://whoami.r-crm.site>
+
 **Стек:** TypeScript, Node.js 24, NestJS 11, Prisma 7, PostgreSQL 18, GraphQL
 (Apollo Server 5), Docker.
 
