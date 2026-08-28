@@ -15,8 +15,8 @@ export class Project {
   @Field()
   name!: string;
 
-  @Field()
-  summary!: string;
+  @Field({ description: 'Краткое описание' })
+  description!: string;
 
   // Явный () => String: из union-типа string | null метаданные типа не выводятся.
   @Field(() => String, { nullable: true, description: 'Ссылка на работающий проект' })

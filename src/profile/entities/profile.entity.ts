@@ -1,6 +1,6 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
 
-@ObjectType({ description: 'Профиль специалиста. В приложении он ровно один.' })
+@ObjectType({ description: 'Профиль специалиста' })
 export class Profile {
   @Field(() => ID)
   id!: number;
@@ -9,7 +9,7 @@ export class Profile {
   @Field({ description: 'Имя' })
   name!: string;
 
-  @Field({ description: 'Должность одной строкой' })
+  @Field({ description: 'Должность' })
   headline!: string;
 
   @Field({ description: 'Краткое описание' })

@@ -20,7 +20,7 @@ export class ProfileResolver {
     private readonly projectsService: ProjectsService,
   ) {}
 
-  @Query(() => Profile, { description: 'Единственный профиль' })
+  @Query(() => Profile, { description: 'Профиль' })
   profile(): Promise<Profile> {
     return this.profileService.getProfile();
   }
@@ -37,7 +37,7 @@ export class ProfileResolver {
     @Args('category', { type: () => SkillCategory, nullable: true })
     category?: SkillCategory | null,
   ): Promise<Skill[]> {
-    const skills = await this.skillsService.findAll();
+    const skills = await this.skillsService.findCore();
     return category ? skills.filter((skill) => skill.category === category) : skills;
   }
 

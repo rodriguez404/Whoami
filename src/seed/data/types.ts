@@ -3,6 +3,7 @@ import type { ProjectKind, SkillCategory, SocialKind } from '../../generated/pri
 export interface SkillData {
   name: string;
   category: SkillCategory;
+  isCore?: boolean;
 }
 
 export interface ExperienceData {

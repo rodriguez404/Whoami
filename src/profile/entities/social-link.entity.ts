@@ -4,7 +4,7 @@ import { SocialKind } from '../../generated/prisma/enums';
 
 registerEnumType(SocialKind, {
   name: 'SocialKind',
-  description: 'Тип профессионального ресурса',
+  description: 'Тип контакта',
 });
 
 @ObjectType({ description: 'Ссылка на внешний ресурс' })

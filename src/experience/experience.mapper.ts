@@ -12,7 +12,7 @@ export function toExperience(row: ExperienceRow): Experience {
     position: row.position,
     startDate: row.startDate,
     endDate: row.endDate,
-    summary: row.summary,
+    description: row.summary,
   };
 }
 
