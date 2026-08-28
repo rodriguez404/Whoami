@@ -33,8 +33,8 @@ USER node
 EXPOSE 3000
 
 # В slim-образе нет ни curl, ни wget, зато в Node 24 есть глобальный fetch.
-HEALTHCHECK --interval=10s --timeout=3s --start-period=20s --retries=3 \
-    CMD ["node", "-e", "fetch('http://127.0.0.1:' + (process.env.APP_PORT || 3000) + '/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=5 \
+    CMD ["node", "-e", "const u = 'http://127.0.0.1:' + (process.env.APP_PORT || 3000) + '/health'; fetch(u).then(async (r) => { if (!r.ok) { console.log('HTTP ' + r.status + ' ' + (await r.text()).slice(0, 200)); process.exit(1); } console.log('ok'); }).catch((e) => { console.log(u + ' -> ' + e.message + (e.cause ? ' / ' + e.cause.message : '')); process.exit(1); })"]
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 
